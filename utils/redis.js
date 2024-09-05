@@ -1,4 +1,3 @@
-// utils/redis.js
 import { createClient } from 'redis';
 import { promisify } from 'util';
 
@@ -6,15 +5,12 @@ import { promisify } from 'util';
 class RedisClient {
   constructor() {
     this.client = createClient();
-    // Handle connection errors
-    this.client.on('error', (err) => {
-      console.log(`Redis client not connected to server: ${err}`);
+    this.client.on('error', (error) => {
+      console.log(`Redis client not connected to server: ${error}`);
     });
-    // Connect to Redis
-    this.client.connect().catch(console.error);
   }
 
-  // Check if the Redis client is alive
+  // check connection status and report
   isAlive() {
     if (this.client.connected) {
       return true;
@@ -22,27 +18,27 @@ class RedisClient {
     return false;
   }
 
-  // Asynchronous function to get a value by key
+  // get value for given key from redis server
   async get(key) {
     const getCommand = promisify(this.client.get).bind(this.client);
     const value = await getCommand(key);
     return value;
   }
 
-  // Asynchronous function to set a value with expiration
+  // set key value pair to redis server
   async set(key, value, time) {
     const setCommand = promisify(this.client.set).bind(this.client);
     await setCommand(key, value);
     await this.client.expire(key, time);
   }
 
-  // Asynchronous function to delete a value by key
+  // del key value pair from redis server
   async del(key) {
     const delCommand = promisify(this.client.del).bind(this.client);
     await delCommand(key);
   }
 }
 
-// Create and export an instance of RedisClient
 const redisClient = new RedisClient();
+
 module.exports = redisClient;
